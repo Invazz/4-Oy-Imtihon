@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOTEONE o'xshash sayt</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: #000000;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    .banner {
+      background: linear-gradient(to right, #1a1a1a, #1a1a1a);
+      position: relative;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 5%;
+    }
+    .banner img {
+      max-height: 350px;
+      cursor: pointer;
+    }
+    .nav-link.active {
+      border-bottom: 2px solid #1643d4;
+      color: #ffffff;
+    }
+    .product-card {
+      transition: transform 0.2s;
+      border: 1px solid #333333;
+      border-radius: 5px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      background-color: #000000;
+      color: #ffffff;
+    }
+    .product-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    .product-grid {
+      display: none;
+    }
+    .product-grid.active {
+      display: grid;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal.full-screen {
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      padding: 20px;
+      background-color: #1a1a1a;
+      color: #fff;
+    }
+    .modal-content {
+      background-color: #000000;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 90%;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: #ffffff;
+    }
+    .modal-content.full-screen {
+      background-color: #1a1a1a;
+      color: #fff;
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #ffffff;
+    }
+    .quantity-btn {
+      padding: 5px 10px;
+      margin: 0 5px;
+      background-color: #333333;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      cursor: pointer;
+    }
+    .quantity-btn:hover {
+      background-color: #4b4b4b;
+    }
+    .theme-toggle {
+      cursor: pointer;
+    }
+    /* Darkmode Styles (already optimized for black) */
+    .darkmode {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    .darkmode .sticky-header {
+      background-color: #000000;
+    }
+    .darkmode .banner {
+      background: linear-gradient(to right, #1a1a1a, #1a1a1a);
+    }
+    .darkmode .bg-white {
+      background-color: #000000;
+    }
+    .darkmode .bg-gray-50 {
+      background-color: #000000;
+    }
+    .darkmode .text-gray-600 {
+      color: #ffffff;
+    }
+    .darkmode .text-gray-500 {
+      color: #ffffff;
+    }
+    .darkmode .border-gray-200 {
+      border-color: #333333;
+    }
+    .darkmode .hover\:bg-gray-300:hover {
+      background-color: #333333;
+    }
+    .darkmode input {
+      background-color: #333333;
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+    .darkmode select {
+      background-color: #333333;
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+    .darkmode .bg-gray-200 {
+      background-color: #333333;
+    }
+    .darkmode .modal-content {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    .darkmode .modal.full-screen {
+      background-color: #1a1a1a;
+    }
+    footer {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    footer a {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+    footer a:hover {
+      color: #1643d4;
+    }
+    #weather {
+      background-color: #000000;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans transition-colors duration-300" id="body">
+  <!-- Header -->
+  <header class="sticky-header shadow p-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold cursor-pointer" onclick="goHome()" id="brand">NOTEONE</h1>
+      <div class="flex items-center space-x-4">
+        <div class="relative">
+          <input type="text" id="searchInput" data-key-placeholder="search_placeholder" placeholder="Поиск товаров..." class="border rounded px-4 py-2 bg-gray-800 text-white" oninput="searchProducts()" />
+          <i class="fas fa-search absolute right-3 top-3 text-white"></i>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="changeLanguage('uz')" class="px-2 py-1 bg-gray-800 rounded text-white hover:bg-gray-700">O'zbek</button>
+          <button onclick="changeLanguage('ru')" class="px-2 py-1 bg-gray-800 rounded text-white hover:bg-gray-700">Русский</button>
+          <button onclick="changeLanguage('en')" class="px-2 py-1 bg-gray-800 rounded text-white hover:bg-gray-700">English</button>
+        </div>
+        <select id="currency" class="border rounded px-2 py-1 bg-gray-800 text-white">
+          <option value="UZS">UZS</option>
+          <option value="USD">USD</option>
+          <option value="RUB">RUB</option>
+        </select>
+        <i class="fas fa-shopping-cart text-white cursor-pointer" onclick="showCart()"></i>
+        <i class="fas fa-user text-white cursor-pointer" onclick="showAccount()"></i>
+        <i id="themeToggle" class="fas fa-sun text-white cursor-pointer" onclick="toggleTheme()"></i>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="bg-black shadow p-4">
+    <div class="container mx-auto flex space-x-6">
+      <a href="#catalog" class="nav-link text-white hover:text-blue-600" data-key="catalog">Каталог</a>
+      <a href="#computers" class="nav-link text-white hover:text-blue-600" data-key="computers">Компьютеры</a>
+      <a href="#components" class="nav-link text-white hover:text-blue-600" data-key="components">Компоненты</a>
+      <a href="#hyperx" class="nav-link text-white hover:text-blue-600" data-key="hyperx">HyperX</a>
+      <a href="#orders" class="nav-link text-white hover:text-blue-600" data-key="orders">Все заказы</a>
+      <a href="#cart" class="nav-link text-white hover:text-blue-600" data-key="cart">Корзинка</a>
+      <a href="#account" class="nav-link text-white hover:text-blue-600" data-key="account">Аккаунт</a>
+    </div>
+  </nav>
+
+  <!-- Banner -->
+  <div class="banner" id="banner">
+    <img src="https://via.placeholder.com/300x350?text=Pwnage+Banner" alt="Pwnage Banner" id="bannerImage" onclick="showBannerModal(banners[currentBanner].name)">
+    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="changeBanner(-1)">←</button>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="changeBanner(1)">→</button>
+    </div>
+  </div>
+
+  <!-- Weather Widget -->
+  <div class="container mx-auto p-4">
+    <div id="weather" class="p-4 bg-black rounded shadow mb-4">
+      <h3 class="text-xl font-semibold" data-key="weather_title">Toshkent ob-havosi</h3>
+      <p id="weatherInfo"></p>
+    </div>
+  </div>
+
+  <!-- Product Sections -->
+  <div class="container mx-auto p-4">
+    <div id="catalog-grid" class="product-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 active">
+      <!-- Catalog products will be populated here -->
+    </div>
+    <div id="computers-grid" class="product-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+      <!-- Computers products will be populated here -->
+    </div>
+    <div id="components-grid" class="product-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+      <!-- Components products will be populated here -->
+    </div>
+    <div id="hyperx-grid" class="product-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+      <!-- HyperX products will be populated here -->
+    </div>
+    <div id="orders-grid" class="product-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+      <!-- All orders products will be populated here -->
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="cartModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('cartModal')">×</span>
+      <h2 class="text-3xl font-bold mb-4" data-key="cart">Корзинка</h2>
+      <div id="cart-items" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+    </div>
+  </div>
+
+  <div id="accountModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('accountModal')">×</span>
+      <h2 class="text-3xl font-bold mb-4" data-key="account">Аккаунт</h2>
+      <button onclick="register()" class="block w-full text-left px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-2" data-key="register">Регистрация</button>
+      <button onclick="login()" class="block w-full text-left px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" data-key="login">Вход</button>
+    </div>
+  </div>
+
+  <div id="productModal" class="modal full-screen">
+    <div class="modal-content full-screen">
+      <span class="close-btn" onclick="closeModal('productModal')">×</span>
+      <div class="flex flex-col md:flex-row justify-between p-4">
+        <div class="w-full md:w-1/2 flex justify-center">
+          <img id="product-image" src="" alt="Product Image" class="w-64 h-64 object-cover">
+        </div>
+        <div class="w-full md:w-1/2 p-4">
+          <h2 id="product-detail-title" class="text-3xl font-bold mb-4"></h2>
+          <p id="product-price" class="text-2xl text-blue-500 mb-4"></p>
+          <p id="product-description" class="mb-4"></p>
+          <p id="product-brand" class="text-sm text-gray-400 mb-4"></p>
+          <div class="flex items-center mb-4">
+            <button class="quantity-btn" onclick="decreaseQuantity()">-</button>
+            <span id="product-quantity" class="mx-4">1</span>
+            <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+          </div>
+          <button id="add-to-cart-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4" onclick="addToCartFromModal()">В корзину</button>
+          <div class="border-t pt-4 border-gray-700">
+            <h3 class="text-xl font-semibold mb-2">Детали заказа</h3>
+            <p>1 товар: <span id="order-price"></span></p>
+            <p>Итого: <span id="total-price"></span></p>
+            <button class="bg-pink-600 text-white px-4 py-2 rounded mt-4 w-full" onclick="checkout()">Оформить заказ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bannerModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('bannerModal')">×</span>
+      <div id="bannerModalContent"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-black shadow p-6 mt-6">
+    <div class="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div>
+        <h3 class="text-xl font-bold mb-4">NOTEONE</h3>
+        <p data-key="phone">+998 (99) 124-24-24</p>
+        <p data-key="address">Toshkent sh., Navoiy ko‘chasi 37</p>
+        <p data-key="working_hours">Ish vaqti: 10:00 - 20:00</p>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold mb-4" data-key="company">Компания</h3>
+        <p><a href="#" data-key="about_us">О нас</a></p>
+        <p><a href="#" data-key="why_us">Почему мы?</a></p>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold mb-4" data-key="support">Поддержка</h3>
+        <p><a href="#" data-key="payment">Способы оплаты</a></p>
+        <p><a href="#" data-key="faq">FAQ</a></p>
+        <p><a href="#" data-key="delivery">Доставка</a></p>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold mb-4" data-key="projects">Проекты</h3>
+        <p><a href="#" data-key="projects_link">Проекты</a></p>
+      </div>
+    </div>
+    <div class="container mx-auto mt-4 flex space-x-4">
+      <a href="#"><i class="fab fa-instagram"></i> <span data-key="instagram">Instagram</span></a>
+      <a href="#"><i class="fab fa-youtube"></i> <span data-key="youtube">YouTube</span></a>
+      <a href="#"><i class="fab fa-telegram"></i> <span data-key="telegram">Telegram</span></a>
+      <a href="#"><i class="fab fa-tiktok"></i> <span data-key="tiktok">TikTok</span></a>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // Language translations
+    const translations = {
+      uz: {
+        catalog: "Katalog",
+        computers: "Kompyuterlar",
+        components: "Komponentlar",
+        hyperx: "HyperX",
+        orders: "Barcha buyurtmalar",
+        cart: "Savatcha",
+        account: "Akkaunt",
+        company: "Kompaniya",
+        about_us: "Biz haqimizda",
+        why_us: "Nega biz?",
+        support: "Yordam",
+        payment: "To'lov usullari",
+        faq: "FAQ",
+        delivery: "Yetkazib berish",
+        projects: "Loyihalar",
+        projects_link: "Loyihalar",
+        search_placeholder: "Mahsulotlarni qidirish...",
+        add_to_cart: "Savatchaga qo'shish",
+        remove: "O'chirish",
+        weather_title: "Toshkent ob-havosi",
+        weather_error: "Ob-havo ma'lumotlari yuklanmadi.",
+        phone: "+998 (99) 124-24-24",
+        address: "Toshkent sh., Navoiy ko‘chasi 37",
+        working_hours: "Ish vaqti: 10:00 - 20:00",
+        instagram: "Instagram",
+        youtube: "YouTube",
+        telegram: "Telegram",
+        tiktok: "TikTok",
+        register: "Ro'yxatdan o'tish",
+        login: "Kirish",
+        added_to_cart: "Savatchaga qo‘shildi!",
+        banner_info_pwnage: "Pwnage Stormbreaker - Yangi chiqqan yuqori darajadagi klaviatura!",
+        banner_info_mishka: "Mishka - So'nggi yangi mahsulotlar, stil va sifat birga!",
+        banner_info_nvidia: "NVIDIA 50 seriyali videokartalar - Eng yangi grafika texnologiyasi!",
+        banner_info_hyperx: "HyperX - 10% chegirma! Yangi audiomahsulotlar hozir arzonroq!",
+        banner_info_general: "Umumiy reklama - Eng yaxshi takliflar va mahsulotlar!",
+        view_discount: "Chegirmali mahsulotlarni ko'rish"
+      },
+      ru: {
+        catalog: "Каталог",
+        computers: "Компьютеры",
+        components: "Компоненты",
+        hyperx: "HyperX",
+        orders: "Все заказы",
+        cart: "Корзинка",
+        account: "Аккаунт",
+        company: "Компания",
+        about_us: "О нас",
+        why_us: "Почему мы?",
+        support: "Поддержка",
+        payment: "Способы оплаты",
+        faq: "FAQ",
+        delivery: "Доставка",
+        projects: "Проекты",
+        projects_link: "Проекты",
+        search_placeholder: "Поиск товаров...",
+        add_to_cart: "В корзину",
+        remove: "Удалить",
+        weather_title: "Погода в Ташкенте",
+        weather_error: "Данные о погоде не загружены.",
+        phone: "+998 (99) 124-24-24",
+        address: "г. Ташкент, ул. Навои 37",
+        working_hours: "Время работы: 10:00 - 20:00",
+        instagram: "Instagram",
+        youtube: "YouTube",
+        telegram: "Telegram",
+        tiktok: "TikTok",
+        register: "Регистрация",
+        login: "Вход",
+        added_to_cart: "Добавлено в корзину!",
+        banner_info_pwnage: "Pwnage Stormbreaker - Новая высококлассная клавиатура!",
+        banner_info_mishka: "Mishka - Новейшие продукты, стиль и качество вместе!",
+        banner_info_nvidia: "NVIDIA 50 серии - Новейшие графические технологии!",
+        banner_info_hyperx: "HyperX - Скидка 10%! Новые аудиопродукты теперь дешевле!",
+        banner_info_general: "Общая реклама - Лучшие предложения и продукты!",
+        view_discount: "Посмотреть товары со скидкой"
+      },
+      en: {
+        catalog: "Catalog",
+        computers: "Computers",
+        components: "Components",
+        hyperx: "HyperX",
+        orders: "All Orders",
+        cart: "Cart",
+        account: "Account",
+        company: "Company",
+        about_us: "About Us",
+        why_us: "Why Us?",
+        support: "Support",
+        payment: "Payment Methods",
+        faq: "FAQ",
+        delivery: "Delivery",
+        projects: "Projects",
+        projects_link: "Projects",
+        search_placeholder: "Search products...",
+        add_to_cart: "Add to Cart",
+        remove: "Remove",
+        weather_title: "Tashkent Weather",
+        weather_error: "Weather data could not be loaded.",
+        phone: "+998 (99) 124-24-24",
+        address: "Tashkent, Navoi St. 37",
+        working_hours: "Working Hours: 10:00 - 20:00",
+        instagram: "Instagram",
+        youtube: "YouTube",
+        telegram: "Telegram",
+        tiktok: "TikTok",
+        register: "Register",
+        login: "Login",
+        added_to_cart: "Added to cart!",
+        banner_info_pwnage: "Pwnage Stormbreaker - Newly released high-end keyboard!",
+        banner_info_mishka: "Mishka - Latest products, style and quality combined!",
+        banner_info_nvidia: "NVIDIA 50 Series - The latest graphics technology!",
+        banner_info_hyperx: "HyperX - 10% discount! New audio products now cheaper!",
+        banner_info_general: "General Ad - Best offers and products!",
+        view_discount: "View discounted products"
+      }
+    };
+
+    let currentLang = 'ru'; // Default language
+    let currentProductQuantity = 1;
+
+    // Valyuta kurslari (taxminiy qiymatlar)
+    const rates = {
+      UZS: { USD: 1 / 12650, RUB: 1 / 135 },
+      USD: { UZS: 12650, RUB: 90 },
+      RUB: { UZS: 135, USD: 1 / 90 }
+    };
+
+    // Change language function
+    function changeLanguage(lang) {
+      currentLang = lang;
+      document.querySelectorAll('[data-key]').forEach(element => {
+        const key = element.getAttribute('data-key');
+        element.textContent = translations[lang][key] || '';
+      });
+      document.querySelectorAll('[data-key-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-key-placeholder');
+        element.placeholder = translations[lang][key] || '';
+      });
+      updatePrices();
+      populateProducts(Object.keys(productGrids).find(key => productGrids[key].classList.contains('active')) || 'catalog');
+      if (document.getElementById('cartModal').style.display === 'block') displayCart();
+      if (document.getElementById('productModal').style.display === 'flex') updateProductModal();
+    }
+
+    // Navigation and product display
+    const navLinks = document.querySelectorAll('.nav-link');
+    const productGrids = {
+      catalog: document.getElementById('catalog-grid'),
+      computers: document.getElementById('computers-grid'),
+      components: document.getElementById('components-grid'),
+      hyperx: document.getElementById('hyperx-grid'),
+      orders: document.getElementById('orders-grid')
+    };
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        // Hide all grids
+        Object.values(productGrids).forEach(grid => grid.classList.remove('active'));
+
+        // Show the selected grid
+        const target = link.getAttribute('href').substring(1);
+        if (target !== 'cart' && target !== 'account') {
+          productGrids[target].classList.add('active');
+          populateProducts(target);
+        } else if (target === 'cart') {
+          showCart();
+        } else if (target === 'account') {
+          showAccount();
+        }
+      });
+    });
+
+    // Sample products data (HyperX mahsulotlariga 10% chegirma qo‘shildi)
+    const products = {
+      catalog: [
+        { name: "Brateck LDT69-CO22 Black", price: 1110000, image: "https://via.placeholder.com/150", brand: "Brateck", description: "Brateck LDT69-CO22 Black - yuqori sifatli monitor stendi." },
+        { name: "DarkProject ALU87 Daylight", price: 1175000, image: "https://via.placeholder.com/150", brand: "DarkProject", description: "DarkProject ALU87 Daylight - zamonaviy mexanik klaviatura." },
+        { name: "DarkProject ALU87 Midnight", price: 1175000, image: "https://via.placeholder.com/150", brand: "DarkProject", description: "DarkProject ALU87 Midnight - tungi dizaynli klaviatura." },
+        { name: "DarkProject ALU87 Violet", price: 849000, image: "https://via.placeholder.com/150", brand: "DarkProject", description: "DarkProject ALU87 Violet - rangli va zamonaviy klaviatura." },
+        { name: "HyperX Cloud III Red Wireless", price: 2100000 * 0.9, image: "https://via.placeholder.com/150", brand: "HyperX", description: "HyperX Cloud III Red Wireless - simsiz quloqchinlar 10% chegirmada!" }
+      ],
+      computers: [
+        { name: "MSI G274F 27'' 200Hz Rapid IPS", price: 2358750, image: "https://via.placeholder.com/150", brand: "MSI", description: "MSI G274F 27'' - 200Hz tezlikdagi monitor." }
+      ],
+      components: [
+        { name: "Pwnage Stormbreaker Wireless BLG Edition", price: 2048000, image: "https://via.placeholder.com/150", brand: "Pwnage", description: "Pwnage Stormbreaker - simsiz sichqoncha, BLG nashri." }
+      ],
+      hyperx: [
+        { name: "HyperX QuadCast 2", price: 2309000 * 0.9, image: "https://via.placeholder.com/150", brand: "HyperX", description: "HyperX QuadCast 2 - mikrofon 10% chegirmada!" },
+        { name: "HyperX Cloud III Red Wireless", price: 2100000 * 0.9, image: "https://via.placeholder.com/150", brand: "HyperX", description: "HyperX Cloud III Red Wireless - simsiz quloqchinlar 10% chegirmada!" }
+      ],
+      orders: [
+        { name: "Logitech G923 Racing Wheel", price: 4902000, image: "https://via.placeholder.com/150", brand: "Logitech", description: "Logitech G923 - poyga rul." },
+        { name: "Asus Blue Cave AC2600", price: 913500, image: "https://via.placeholder.com/150", brand: "Asus", description: "Asus Blue Cave AC2600 - yuqori tezlikdagi router." }
+      ]
+    };
+
+    let cart = [];
+
+    // Bannerlar
+    const banners = [
+      { name: "Pwnage", image: "https://files.ox-sys.com/cache/original/image/8f/db/65/8fdb65fdd8982b2944aeee72996a36883018a93e5024b35060d57584d885fa70.png", infoKey: "banner_info_pwnage" },
+      { name: "Mishka", image: "https://files.ox-sys.com/cache/original/image/d7/04/c4/d704c4337466e06468ffea38cbc0b02f54161e0cc4463087d417def573b02b93.png", infoKey: "banner_info_mishka" },
+      { name: "NVIDIA", image: "https://files.ox-sys.com/cache/original/image/46/54/99/46549960abe47b79f7a997f3e3aa4f70d4c51c39f793f86c95bab363cdfa3c56.png", infoKey: "banner_info_nvidia" },
+      { name: "HyperX", image: "https://files.ox-sys.com/cache/original/image/1d/ec/26/1dec269863d269f59f430bbd2a6676b809eb66cb25438702b356e4e65a9e1aeb.png", infoKey: "banner_info_hyperx" },
+      { name: "General", image: "https://files.ox-sys.com/cache/original/image/b4/e5/f5/b4e5f5d7fc995fabaca1226be181ac84df072f858c70f74c7661cfe3e0168991.png", infoKey: "banner_info_general" }
+    ];
+    let currentBanner = 0;
+
+    function changeBanner(direction) {
+      currentBanner = (currentBanner + direction + banners.length) % banners.length;
+      const bannerImage = document.getElementById('bannerImage');
+      bannerImage.src = banners[currentBanner].image;
+      bannerImage.alt = banners[currentBanner].name + " Banner";
+      clearInterval(bannerInterval);
+      bannerInterval = setInterval(autoChangeBanner, 5000);
+    }
+
+    function autoChangeBanner() {
+      changeBanner(1);
+    }
+
+    let bannerInterval = setInterval(autoChangeBanner, 5000);
+
+    function showBannerModal(product) {
+      const modal = document.getElementById('bannerModal');
+      const modalContent = document.getElementById('bannerModalContent');
+      const banner = banners.find(b => b.name === product);
+      const infoKey = banner.infoKey;
+
+      if (product === 'HyperX') {
+        modalContent.innerHTML = `
+          <img src="${banner.image}" alt="${banner.name}" class="w-full h-64 object-cover mb-4">
+          <p>${translations[currentLang][infoKey]}</p>
+          <a href="#" onclick="closeModal('bannerModal'); showHyperXDiscount()" class="text-blue-600 underline">${translations[currentLang].view_discount}</a>
+        `;
+      } else {
+        modalContent.innerHTML = `
+          <img src="${banner.image}" alt="${banner.name}" class="w-full h-64 object-cover mb-4">
+          <p>${translations[currentLang][infoKey]}</p>
+        `;
+      }
+      modal.style.display = 'flex';
+    }
+
+    function showHyperXDiscount() {
+      navLinks.forEach(l => l.classList.remove('active'));
+      document.querySelector('[href="#hyperx"]').classList.add('active');
+      Object.values(productGrids).forEach(grid => grid.classList.remove('active'));
+      productGrids['hyperx'].classList.add('active');
+      populateProducts('hyperx');
+    }
+
+    function populateProducts(category) {
+      const grid = productGrids[category];
+      grid.innerHTML = '';
+      products[category].forEach(product => {
+        if (!searchInput.value || product.name.toLowerCase().includes(searchInput.value.toLowerCase())) {
+          const productCard = `
+            <div class="product-card bg-black" onclick="showProductModal('${product.name}', '${category}')">
+              <img src="${product.image}" alt="${product.name}" class="w-full h-32 object-cover mb-2">
+              <h3 class="text-sm font-semibold">${product.name}</h3>
+              <p class="text-blue-600 font-bold" id="price-${product.name.replace(/ /g, '-')}-${category}">${formatPrice(product.price)}</p>
+              <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="event.stopPropagation(); addToCart('${product.name}', ${product.price}, '${category}')">${translations[currentLang].add_to_cart}</button>
+              <p class="text-xs text-gray-400">${product.brand}</p>
+            </div>
+          `;
+          grid.innerHTML += productCard;
+        }
+      });
+      updatePrices();
+    }
+
+    function showProductModal(name, category) {
+      const product = products[category].find(p => p.name === name);
+      if (!product) return;
+
+      currentProductQuantity = 1;
+      const modal = document.getElementById('productModal');
+      document.getElementById('product-image').src = product.image;
+      document.getElementById('product-detail-title').textContent = product.name;
+      document.getElementById('product-price').textContent = formatPrice(product.price);
+      document.getElementById('product-description').textContent = product.description;
+      document.getElementById('product-brand').textContent = product.brand;
+      document.getElementById('product-quantity').textContent = currentProductQuantity;
+      document.getElementById('order-price').textContent = formatPrice(product.price);
+      document.getElementById('total-price').textContent = formatPrice(product.price);
+      modal.style.display = 'flex';
+    }
+
+    function updateProductModal() {
+      const name = document.getElementById('product-detail-title').textContent;
+      const category = Object.keys(products).find(cat => products[cat].some(p => p.name === name));
+      const product = products[category].find(p => p.name === name);
+      document.getElementById('product-price').textContent = formatPrice(product.price);
+      document.getElementById('order-price').textContent = formatPrice(product.price * currentProductQuantity);
+      document.getElementById('total-price').textContent = formatPrice(product.price * currentProductQuantity);
+    }
+
+    function increaseQuantity() {
+      currentProductQuantity++;
+      document.getElementById('product-quantity').textContent = currentProductQuantity;
+      updateProductModal();
+    }
+
+    function decreaseQuantity() {
+      if (currentProductQuantity > 1) {
+        currentProductQuantity--;
+        document.getElementById('product-quantity').textContent = currentProductQuantity;
+        updateProductModal();
+      }
+    }
+
+    function addToCartFromModal() {
+      const name = document.getElementById('product-detail-title').textContent;
+      const category = Object.keys(products).find(cat => products[cat].some(p => p.name === name));
+      const product = products[category].find(p => p.name === name);
+      for (let i = 0; i < currentProductQuantity; i++) {
+        cart.push({ name, price: product.price, category });
+      }
+      alert(`${name} ${translations[currentLang].added_to_cart}`);
+      if (document.getElementById('cartModal').style.display === 'block') {
+        displayCart();
+      }
+    }
+
+    function searchProducts() {
+      Object.keys(productGrids).forEach(category => {
+        if (productGrids[category].classList.contains('active')) {
+          populateProducts(category);
+        }
+      });
+    }
+
+    function updateCurrency() {
+      updatePrices();
+    }
+
+    function formatPrice(price) {
+      const currency = document.getElementById('currency').value;
+      if (currency === 'UZS') {
+        return `${Math.round(price).toLocaleString()} UZS`;
+      } else {
+        const convertedPrice = price * rates['UZS'][currency];
+        return currency === 'USD' ? `$${Math.round(convertedPrice)}` : `${Math.round(convertedPrice)} RUB`;
+      }
+    }
+
+    function updatePrices() {
+      document.querySelectorAll('[id^="price-"]').forEach(element => {
+        const [name, category] = element.id.replace('price-', '').split('-');
+        if (products[category]) {
+          const product = products[category].find(p => p.name.replace(/ /g, '-') === name);
+          if (product) {
+            element.textContent = formatPrice(product.price);
+          }
+        }
+      });
+      if (document.getElementById('productModal').style.display === 'flex') {
+        updateProductModal();
+      }
+      if (document.getElementById('cartModal').style.display === 'block') {
+        displayCart();
+      }
+    }
+
+    function addToCart(name, price, category) {
+      cart.push({ name, price, category });
+      alert(`${name} ${translations[currentLang].added_to_cart}`);
+    }
+
+    function showCart() {
+      navLinks.forEach(l => l.classList.remove('active'));
+      document.querySelector('[href="#cart"]').classList.add('active');
+      const modal = document.getElementById('cartModal');
+      displayCart();
+      modal.style.display = 'flex';
+    }
+
+    function displayCart() {
+      const cartItems = document.getElementById('cart-items');
+      cartItems.innerHTML = '';
+      cart.forEach(item => {
+        const cartCard = `
+          <div class="product-card bg-black">
+            <h3 class="text-sm font-semibold">${item.name}</h3>
+            <p class="text-blue-600 font-bold">${formatPrice(item.price)}</p>
+            <button class="mt-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onclick="removeFromCart('${item.name}')">${translations[currentLang].remove}</button>
+          </div>
+        `;
+        cartItems.innerHTML += cartCard;
+      });
+    }
+
+    function removeFromCart(name) {
+      cart = cart.filter(item => item.name !== name);
+      displayCart();
+    }
+
+    function showAccount() {
+      navLinks.forEach(l => l.classList.remove('active'));
+      document.querySelector('[href="#account"]').classList.add('active');
+      const modal = document.getElementById('accountModal');
+      modal.style.display = 'flex';
+    }
+
+    function register() {
+      alert(`${translations[currentLang].register} sahifasi ochiladi!`);
+    }
+
+    function login() {
+      alert(`${translations[currentLang].login} sahifasi ochiladi!`);
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.style.display = 'none';
+    }
+
+    function checkout() {
+      alert('Buyurtma rasmiylashtirildi!');
+      closeModal('productModal');
+    }
+
+    function goHome() {
+      navLinks.forEach(l => l.classList.remove('active'));
+      Object.values(productGrids).forEach(grid => grid.classList.remove('active'));
+      document.querySelector('[href="#catalog"]').click();
+      closeModal('cartModal');
+      closeModal('accountModal');
+      closeModal('productModal');
+      closeModal('bannerModal');
+    }
+
+    function toggleTheme() {
+      const body = document.getElementById('body');
+      const themeToggle = document.getElementById('themeToggle');
+      if (body.classList.contains('darkmode')) {
+        body.classList.remove('darkmode');
+        themeToggle.classList.remove('fa-moon');
+        themeToggle.classList.add('fa-sun');
+      } else {
+        body.classList.add('darkmode');
+        themeToggle.classList.remove('fa-sun');
+        themeToggle.classList.add('fa-moon');
+      }
+    }
+
+    // Fetch weather data (OpenWeatherMap API)
+    fetch('https://api.openweathermap.org/data/2.5/weather?q=Tashkent&appid=7c2e354d0b2f678e6c54b1a108b74d54&units=metric')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('weatherInfo').textContent = `${data.main.temp}°C, ${data.weather[0].description}`;
+      })
+      .catch(error => {
+        document.getElementById('weatherInfo').textContent = translations[currentLang].weather_error;
+      });
+
+    // Initialize with catalog
+    document.querySelector('[href="#catalog"]').click();
+    changeLanguage('ru'); // Set default language on load
+  </script>
+</body>
+</html>
